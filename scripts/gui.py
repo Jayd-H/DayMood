@@ -4,14 +4,14 @@ from tkinter import (
     Button,
     Label,
     Scrollbar,
-    Listbox,
-    VERTICAL,
+    Canvas,
+    NW,
+    BOTH,
     LEFT,
     RIGHT,
-    BOTH,
-    END,
-    NW,
     Y,
+    VERTICAL,
+    END,
 )
 from data_processing import load_and_process_data, get_highest_lowest_scores
 from model_training import train_model
@@ -173,11 +173,9 @@ def show_plot(plot_function):
     back_button.pack(anchor=NW, padx=10, pady=10)
 
     fig = plot_function()
-    fig.patch.set_facecolor(
-        PLOT_BACKGROUND_COLOR
-    )  # Set the background color for the plot figure
+    fig.patch.set_facecolor(PLOT_BACKGROUND_COLOR)
     ax = fig.gca()
-    ax.set_facecolor(PLOT_BACKGROUND_COLOR)  # Set the background color for the axes
+    ax.set_facecolor(PLOT_BACKGROUND_COLOR)
 
     canvas = FigureCanvasTkAgg(fig, master=plot_frame)
     canvas.draw()
@@ -200,13 +198,23 @@ def show_highest_lowest(highest_lowest_df):
     )
     back_button.pack(anchor=NW, padx=10, pady=10)
 
-    scores_frame = Frame(frame, bg=BACKGROUND_COLOR)
-    scores_frame.pack(fill=BOTH, expand=True, padx=10, pady=10)
+    canvas = Canvas(frame, bg=BACKGROUND_COLOR)
+    scrollbar = Scrollbar(frame, orient=VERTICAL, command=canvas.yview)
+    scrollable_frame = Frame(canvas, bg=BACKGROUND_COLOR)
 
-    row_index = 0
+    scrollable_frame.bind(
+        "<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+    )
+
+    canvas.create_window((0, 0), window=scrollable_frame, anchor=NW)
+    canvas.configure(yscrollcommand=scrollbar.set)
+
+    canvas.pack(side=LEFT, fill=BOTH, expand=True)
+    scrollbar.pack(side=RIGHT, fill=Y)
+
     for index, row in highest_lowest_df.iterrows():
-        category_frame = Frame(scores_frame, bg=BACKGROUND_COLOR, bd=2, relief="groove")
-        category_frame.grid(row=row_index, column=0, padx=10, pady=5, sticky="nsew")
+        category_frame = Frame(scrollable_frame, bg=BACKGROUND_COLOR)
+        category_frame.pack(fill=BOTH, expand=True, pady=5)
 
         category_label = Label(
             category_frame,
@@ -214,7 +222,7 @@ def show_highest_lowest(highest_lowest_df):
             font=("Helvetica", 14, "bold"),
             bg=BACKGROUND_COLOR,
         )
-        category_label.grid(row=0, column=0, padx=10, pady=5, sticky="w")
+        category_label.pack(anchor=NW)
 
         highest_label = Label(
             category_frame,
@@ -222,7 +230,7 @@ def show_highest_lowest(highest_lowest_df):
             font=("Helvetica", 12),
             bg=BACKGROUND_COLOR,
         )
-        highest_label.grid(row=1, column=0, padx=10, pady=5, sticky="w")
+        highest_label.pack(anchor=NW)
 
         lowest_label = Label(
             category_frame,
@@ -230,13 +238,7 @@ def show_highest_lowest(highest_lowest_df):
             font=("Helvetica", 12),
             bg=BACKGROUND_COLOR,
         )
-        lowest_label.grid(row=2, column=0, padx=10, pady=5, sticky="w")
-
-        row_index += 1
-
-    scores_frame.columnconfigure(0, weight=1)
-    for i in range(row_index):
-        scores_frame.rowconfigure(i, weight=1)
+        lowest_label.pack(anchor=NW)
 
 
 if __name__ == "__main__":
