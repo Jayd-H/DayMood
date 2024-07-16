@@ -15,8 +15,6 @@ def plot_feature_importance(feature_importance_df):
     ax.set_title("Feature Importance")
     ax.invert_yaxis()
 
-    fig.text(0.5, -0.1, wrap=True, horizontalalignment="center", fontsize=12)
-
     fig.tight_layout()
     return fig
 
